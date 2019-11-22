@@ -5,6 +5,12 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Oculus/VR/Scenes/ControllerModels.unity
     guid: 39cfe7aa0a2d46c47994d8d0308ec663
+  - enabled: 1
+    path: Assets/bHaptics/QuestIntegration/Scenes/2. pointing Example.unity
+    guid: 6fb44997f32924745a609e9c8767f88a
+  - enabled: 0
+    path: Assets/bHaptics/QuestIntegration/Scenes/1. Collision Example.unity
+    guid: e280f86a25a794940a9bc956059fac7f

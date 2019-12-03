@@ -11,6 +11,9 @@ public class AndroidHapticPlayer :IHapticPlayer
     private readonly List<string> _activeKeys = new List<string>();
     private readonly List<PositionType> _activePosition = new List<PositionType>();
     private HashSet<string> registered = new HashSet<string>();
+
+    public event Action<string> OnConnect, OnDisconnect;
+
     public void Dispose()
     {
     }
@@ -26,6 +29,14 @@ public class AndroidHapticPlayer :IHapticPlayer
         AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
         Debug.Log("Enable() activity : " + currentActivity);
         hapticPlayer = new AndroidJavaObject("com.bhaptics.bhapticsunity.BhapticsManagerWrapper", currentActivity);
+
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            if (BhapticsManager.Instance.visualizeFeedback)
+            {
+                TurnOnVisualization();
+            }
+        }
     }
 
     public void StopScan()
@@ -132,6 +143,13 @@ public class AndroidHapticPlayer :IHapticPlayer
         return false;
     }
 
+    public void TurnOnVisualization()
+    {
+        if (hapticPlayer != null)
+        {
+            hapticPlayer.Call("turnOnVisualization");
+        }
+    }
 
     public void PingAll()
     {
@@ -262,11 +280,6 @@ public class AndroidHapticPlayer :IHapticPlayer
 
     private void SubmitRequest(SubmitRequest submitRequest)
     {
-        if (submitRequest == null)
-        {
-            return;
-        }
-
         var request = PlayerRequest.Create();
         request.Submit.Add(submitRequest);
         if (hapticPlayer != null)
@@ -279,7 +292,6 @@ public class AndroidHapticPlayer :IHapticPlayer
             {
                 Debug.Log("SubmitRequest() : " + e.Message);
             }
-            
         }
     }
 
@@ -402,6 +414,23 @@ public class AndroidHapticPlayer :IHapticPlayer
     }
 
     public event Action<PlayerResponse> StatusReceived;
+
+    public void Connected(string address)
+    {
+        Debug.Log("Connected " + address);
+        if (OnConnect != null)
+        {
+            OnConnect(address);
+        }
+    }
+    public void Disconnected(string address)
+    {
+        Debug.Log("Disconnected " + address);
+        if (OnDisconnect != null)
+        {
+            OnDisconnect(address);
+        }
+    }
 
     public void Receive(PlayerResponse response)
     {

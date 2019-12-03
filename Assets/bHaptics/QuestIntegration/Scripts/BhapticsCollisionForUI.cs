@@ -10,12 +10,11 @@ public class BhapticsCollisionForUI : MonoBehaviour {
 
         if (button == null)
         {
-            Debug.Log("cannot find button");
             return;
         }
-        
-        button.OnSubmit(null);
-        
+
+        button.onClick.Invoke();
+
     }
 
     void OnCollisionEnter(Collision collision)
@@ -24,11 +23,9 @@ public class BhapticsCollisionForUI : MonoBehaviour {
 
         if (button == null)
         {
-            Debug.Log("cannot find button");
             return;
         }
 
-        button.OnSubmit(null);
+        button.onClick.Invoke();
     }
-
 }

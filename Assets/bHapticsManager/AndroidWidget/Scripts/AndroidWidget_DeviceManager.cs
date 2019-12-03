@@ -5,12 +5,14 @@ using UnityEngine;
 
 namespace Bhaptics.Tact.Unity
 { 
-    public class DeviceManager : MonoBehaviour
+    public class AndroidWidget_DeviceManager : MonoBehaviour
     {
-        public static DeviceManager Instance; 
-        
+        public static AndroidWidget_DeviceManager Instance;
+        [SerializeField] private bool alwaysScanUnConnectedDevice;
+
+
         private List<BhapticsDevice> devices = new List<BhapticsDevice>();
-        private UI_Manager uiManager; 
+        private AndroidWidget_UIManager uiManager; 
 
         [HideInInspector] public bool IsScanning; 
 
@@ -22,7 +24,7 @@ namespace Bhaptics.Tact.Unity
 
             if (Instance == null)
             {
-                uiManager = GetComponent<UI_Manager>();
+                uiManager = GetComponent<AndroidWidget_UIManager>();
                 Instance = this; 
             } 
         }
@@ -32,8 +34,25 @@ namespace Bhaptics.Tact.Unity
             #if !UNITY_ANDROID
                         return;
             #endif
-            CheckUnconnectedDevice();
+
+            Scan();
         }
+
+        private void OnEnable()
+        {
+            if (alwaysScanUnConnectedDevice)
+            {
+                InvokeRepeating("CheckUnconnectedDevice", 0.5f, 0.5f);
+            }
+        }
+        private void OnDisable()
+        {
+            if (alwaysScanUnConnectedDevice)
+            {
+                CancelInvoke();
+            }
+        }
+
 
         private bool ScanTest()
         {
@@ -237,29 +256,46 @@ namespace Bhaptics.Tact.Unity
             }
         }
 
-#endregion
-
-
-#region Check for unconnected devices
-        public void CheckUnconnectedDevice()
+        public void OnConnect(string address)
         {
             var androidHapticPlayer = BhapticsManager.HapticPlayer as AndroidHapticPlayer;
             if (androidHapticPlayer == null)
             {
-                Invoke("CheckUnconnectedDevice", 0.5f);
+                return;
+            }
+            androidHapticPlayer.Connected(address);
+        }
+        public void OnDisconnect(string address)
+        {
+            var androidHapticPlayer = BhapticsManager.HapticPlayer as AndroidHapticPlayer;
+            if (androidHapticPlayer == null)
+            {
+                return;
+            }
+            androidHapticPlayer.Disconnected(address);
+        }
+
+        #endregion
+
+
+            #region Check for unconnected devices
+            public void CheckUnconnectedDevice()
+        {
+            var androidHapticPlayer = BhapticsManager.HapticPlayer as AndroidHapticPlayer;
+            if (androidHapticPlayer == null)
+            {
                 return;
             }
 
             var checkDevices = androidHapticPlayer.GetDeviceList();
             for (int i = 0; i < checkDevices.Count; i++)
             {
-                if (checkDevices[i].IsPaired && CompareDeviceString.convertConnectionStatus(checkDevices[i].ConnectionStatus) == 2 &&
+                if (checkDevices[i].IsPaired && AndroidWidget_CompareDeviceString.convertConnectionStatus(checkDevices[i].ConnectionStatus) == 2 &&
                     !IsScanning)
                 {
                     Scan();
                 }
             }
-            Invoke("CheckUnconnectedDevice", 3f);
         }
 #endregion
     }

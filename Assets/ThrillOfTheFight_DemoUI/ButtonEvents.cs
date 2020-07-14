@@ -55,27 +55,27 @@ namespace Bhaptics.Tact.Unity
 
         public void TactalPairButton()
         {
-            if (IsDevicePaired(TactDeviceType.Tactal))
+            if (IsDevicePaired(PositionType.Head))
             {
-                AndroidWidget_DeviceManager.Instance.Ping(headDeviceAddress);
+                BhapticsAndroidManager.Ping(PositionType.Head);
                 return;
             }
 
-            var deviceList = AndroidWidget_DeviceManager.Instance.GetDeviceList();
+            var deviceList = BhapticsAndroidManager.GetDevices();
             for (int i = 0; i < deviceList.Count; i++)
             {
-                if (deviceList[i].Position.StartsWith(AndroidWidget_CompareDeviceString.GetPositionString(TactDeviceType.Tactal)))
+                if (deviceList[i].Position == (PositionType.Head))
                 {
-                    AndroidWidget_DeviceManager.Instance.Pair(deviceList[i].Address);
+                    BhapticsAndroidManager.Pair(deviceList[i].Address);
                     break;
                 }
             }
         }
         public void TactalUnPairButton()
         {
-            if (IsDevicePaired(TactDeviceType.Tactal))
+            if (IsDevicePaired(PositionType.Head))
             {
-                AndroidWidget_DeviceManager.Instance.Unpair(headDeviceAddress);
+                BhapticsAndroidManager.Unpair(headDeviceAddress);
                 headDeviceAddress = null;
                 return;
             }
@@ -83,17 +83,17 @@ namespace Bhaptics.Tact.Unity
 
         public void TactotPairButton()
         {
-            if (IsDevicePaired(TactDeviceType.Tactot))
+            if (IsDevicePaired(PositionType.Head))
             {
-                AndroidWidget_DeviceManager.Instance.Ping(vestDeviceAddress);
+                BhapticsAndroidManager.Ping(PositionType.Head);
                 return;
             }
 
-            var deviceList = AndroidWidget_DeviceManager.Instance.GetDeviceList();
+            var deviceList = BhapticsAndroidManager.GetDevices();
             for (int i = 0; i < deviceList.Count; i++)
             {
-                if (deviceList[i].Position.StartsWith(AndroidWidget_CompareDeviceString.GetPositionString(TactDeviceType.Tactot))){
-                    AndroidWidget_DeviceManager.Instance.Pair(deviceList[i].Address);
+                if (deviceList[i].Position == (PositionType.Vest)) {
+                    BhapticsAndroidManager.Pair(deviceList[i].Address);
                     break;
                 }
             }
@@ -101,9 +101,9 @@ namespace Bhaptics.Tact.Unity
 
         public void TactotUnPairButton()
         {
-            if (IsDevicePaired(TactDeviceType.Tactot))
+            if (IsDevicePaired(PositionType.Vest))
             {
-                AndroidWidget_DeviceManager.Instance.Unpair(vestDeviceAddress);
+                BhapticsAndroidManager.Unpair(vestDeviceAddress);
                 vestDeviceAddress = null;
                 return;
             }
@@ -121,9 +121,9 @@ namespace Bhaptics.Tact.Unity
             while (true)
             {
                 yield return new WaitForSeconds(0.2f);
-                if (!AndroidWidget_DeviceManager.Instance.IsScanning)
+                if (!BhapticsAndroidManager.IsScanning())
                 {
-                    AndroidWidget_DeviceManager.Instance.Scan();
+                    BhapticsAndroidManager.Scan();
                 }
             }
         }
@@ -148,9 +148,9 @@ namespace Bhaptics.Tact.Unity
         {
             if (AndroidPermissionsManager.CheckBluetoothPermissions())
             {
-                if (!IsDevicePaired(TactDeviceType.Tactal))
+                if (!IsDevicePaired(PositionType.Head))
                 {
-                    if (!CanPairedDevice(TactDeviceType.Tactal))
+                    if (!CanPairedDevice(PositionType.Head))
                     {
                         tactalPairButton.interactable = false;
                         tactalPairButtonText.color = new Color(0.78f, 0.78f, 0.78f, 0.5f);
@@ -173,9 +173,9 @@ namespace Bhaptics.Tact.Unity
                     tactalUnPairButtonText.color = Color.white;
                 }
 
-                if (!IsDevicePaired(TactDeviceType.Tactot))
+                if (!IsDevicePaired(PositionType.Vest))
                 {
-                    if (!CanPairedDevice(TactDeviceType.Tactot))
+                    if (!CanPairedDevice(PositionType.Vest))
                     {
                         tactotPairButton.interactable = false;
                         tactotPairButtonText.color = new Color(0.78f, 0.78f, 0.78f, 0.5f);
@@ -203,23 +203,23 @@ namespace Bhaptics.Tact.Unity
 
 
 
-        private bool CanPairedDevice(TactDeviceType deviceType)
+        private bool CanPairedDevice(PositionType deviceType)
         {
-            var deviceList = AndroidWidget_DeviceManager.Instance.GetDeviceList();
+            var deviceList = BhapticsAndroidManager.GetDevices();
 
             if (!IsDevicePaired(deviceType))
             {
                 for (int i = 0; i < deviceList.Count; i++)
                 {
-                    if (!deviceList[i].IsPaired && AndroidWidget_CompareDeviceString.convertConnectionStatus(deviceList[i].ConnectionStatus) == 2 &&
-                        deviceList[i].Position.StartsWith(AndroidWidget_CompareDeviceString.GetPositionString(deviceType)))
+                    if (!deviceList[i].IsPaired && AndroidUtils.ConvertConnectionStatus(deviceList[i].ConnectionStatus) == 2 &&
+                        deviceList[i].Position == (deviceType))
                     {
-                        if(deviceType == TactDeviceType.Tactal)
+                        if (deviceType == PositionType.Head)
                         {
                             tactalStateText.text = "Ready to be paired";
                         }
 
-                        if (deviceType == TactDeviceType.Tactot)
+                        if (deviceType == PositionType.Vest)
                         {
                             tactotStateText.text = "Ready to be paired";
                         }
@@ -227,12 +227,12 @@ namespace Bhaptics.Tact.Unity
                     }
                 }
 
-                if (deviceType == TactDeviceType.Tactal)
+                if (deviceType == PositionType.Head)
                 {
                     tactalStateText.text = "Not Found";
                 }
 
-                if (deviceType == TactDeviceType.Tactot)
+                if(deviceType == PositionType.Vest)
                 {
                     tactotStateText.text = "Not Found";
                 }
@@ -241,18 +241,18 @@ namespace Bhaptics.Tact.Unity
         }
 
 
-        private bool IsDevicePaired(TactDeviceType deviceType)
+        private bool IsDevicePaired(PositionType deviceType)
         {
-            var deviceList = AndroidWidget_DeviceManager.Instance.GetDeviceList();
+            var deviceList = BhapticsAndroidManager.GetDevices();
 
             for(int i = 0; i < deviceList.Count; i++)
             {
-                if(deviceList[i].IsPaired && deviceList[i].Position.StartsWith(AndroidWidget_CompareDeviceString.GetPositionString(deviceType)))
+                if(deviceList[i].IsPaired && deviceList[i].Position == (deviceType))
                 //CompareDeviceString.convertConnectionStatus(deviceList[i].ConnectionStatus) == 0 &&
                 {
-                    if (deviceType == TactDeviceType.Tactal)
+                    if (deviceType == PositionType.Head)
                     {
-                        if (AndroidWidget_CompareDeviceString.convertConnectionStatus(deviceList[i].ConnectionStatus) == 0)
+                        if (AndroidUtils.ConvertConnectionStatus(deviceList[i].ConnectionStatus) == 0)
                         {
                             tactalStateText.text = "Connected";
 
@@ -262,7 +262,7 @@ namespace Bhaptics.Tact.Unity
 
                             headDeviceAddress = deviceList[i].Address;
                         }
-                        else if(AndroidWidget_CompareDeviceString.convertConnectionStatus(deviceList[i].ConnectionStatus) == 2)
+                        else if(AndroidUtils.ConvertConnectionStatus(deviceList[i].ConnectionStatus) == 2)
                         {
                             tactalStateText.text = "DisConnected";
 
@@ -275,9 +275,9 @@ namespace Bhaptics.Tact.Unity
                         }
                     }
 
-                    if (deviceType == TactDeviceType.Tactot)
+                    if (deviceType == PositionType.Vest)
                     {
-                        if (AndroidWidget_CompareDeviceString.convertConnectionStatus(deviceList[i].ConnectionStatus) == 0)
+                        if (AndroidUtils.ConvertConnectionStatus(deviceList[i].ConnectionStatus) == 0)
                         {
                             tactotStateText.text = "Connected";
 
@@ -287,8 +287,7 @@ namespace Bhaptics.Tact.Unity
 
                             vestDeviceAddress = deviceList[i].Address;
                         }
-                        else
-                        if (AndroidWidget_CompareDeviceString.convertConnectionStatus(deviceList[i].ConnectionStatus) == 0)
+                        else if (AndroidUtils.ConvertConnectionStatus(deviceList[i].ConnectionStatus) == 0)
                         {
                             tactotStateText.text = "DisConnected";
 
@@ -311,7 +310,7 @@ namespace Bhaptics.Tact.Unity
 
 
 
-        private IEnumerator SuccessPairCheck(TactDeviceType deviceType)
+        private IEnumerator SuccessPairCheck(PositionType deviceType)
         {
             yield return null;
         }

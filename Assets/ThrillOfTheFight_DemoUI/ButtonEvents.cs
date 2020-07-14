@@ -24,9 +24,6 @@ namespace Bhaptics.Tact.Unity
         private Text tactotPairButtonText;
         private Text tactotUnPairButtonText;
 
-        private string headDeviceAddress;
-        private string vestDeviceAddress;
-
 
         private void Start()
         {
@@ -73,19 +70,18 @@ namespace Bhaptics.Tact.Unity
         }
         public void TactalUnPairButton()
         {
-            if (IsDevicePaired(PositionType.Head))
+            var pairedDevices = BhapticsAndroidManager.GetPairedDevices(PositionType.Head);
+            foreach (var pairedDevice in pairedDevices)
             {
-                BhapticsAndroidManager.Unpair(headDeviceAddress);
-                headDeviceAddress = null;
-                return;
+                BhapticsAndroidManager.Unpair(pairedDevice.Address);
             }
         }
 
         public void TactotPairButton()
         {
-            if (IsDevicePaired(PositionType.Head))
+            if (IsDevicePaired(PositionType.Vest))
             {
-                BhapticsAndroidManager.Ping(PositionType.Head);
+                BhapticsAndroidManager.Ping(PositionType.Vest);
                 return;
             }
 
@@ -101,11 +97,10 @@ namespace Bhaptics.Tact.Unity
 
         public void TactotUnPairButton()
         {
-            if (IsDevicePaired(PositionType.Vest))
+            var pairedDevices = BhapticsAndroidManager.GetPairedDevices(PositionType.Vest);
+            foreach (var pairedDevice in pairedDevices)
             {
-                BhapticsAndroidManager.Unpair(vestDeviceAddress);
-                vestDeviceAddress = null;
-                return;
+                BhapticsAndroidManager.Unpair(pairedDevice.Address);
             }
         }
 
@@ -248,7 +243,6 @@ namespace Bhaptics.Tact.Unity
             for(int i = 0; i < deviceList.Count; i++)
             {
                 if(deviceList[i].IsPaired && deviceList[i].Position == (deviceType))
-                //CompareDeviceString.convertConnectionStatus(deviceList[i].ConnectionStatus) == 0 &&
                 {
                     if (deviceType == PositionType.Head)
                     {
@@ -259,8 +253,6 @@ namespace Bhaptics.Tact.Unity
                             tactalPairButton.interactable = true;
                             tactalPairButtonText.color = Color.white;
                             tactalPairButtonText.text = "Ping"; 
-
-                            headDeviceAddress = deviceList[i].Address;
                         }
                         else if(AndroidUtils.ConvertConnectionStatus(deviceList[i].ConnectionStatus) == 2)
                         {
@@ -269,9 +261,6 @@ namespace Bhaptics.Tact.Unity
                             tactalPairButton.interactable = false;
                             tactalPairButtonText.color = new Color(0.78f, 0.78f, 0.78f, 0.5f);
                             tactalPairButtonText.text = "Ping";
-
-
-                            headDeviceAddress = deviceList[i].Address;
                         }
                     }
 
@@ -284,8 +273,6 @@ namespace Bhaptics.Tact.Unity
                             tactotPairButton.interactable = true;
                             tactotPairButtonText.color = Color.white;
                             tactotPairButtonText.text = "Ping";
-
-                            vestDeviceAddress = deviceList[i].Address;
                         }
                         else if (AndroidUtils.ConvertConnectionStatus(deviceList[i].ConnectionStatus) == 0)
                         {
@@ -294,16 +281,11 @@ namespace Bhaptics.Tact.Unity
                             tactotPairButton.interactable = false;
                             tactotPairButtonText.color = new Color(0.78f, 0.78f, 0.78f, 0.5f);
                             tactotPairButtonText.text = "Ping";
-
-                            vestDeviceAddress = deviceList[i].Address;
                         }
                     }
                     return true;
                 }
             }
-
-            headDeviceAddress = null;
-            vestDeviceAddress = null;
             return false;
         }
 
